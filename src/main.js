@@ -4,11 +4,22 @@ const { handle, getHandleKey } = require('./routeHandle.js');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 var path =require("path");
 var reload = require('./index');
-var pjson = require(path.join(path.resolve(),'package.json'));
-const settings = pjson.settings;
 var fs =require("fs");
 
 function start(){
+  var settings={};
+  var settingPath = path.join(path.resolve(),'inbiz.settings');
+  if(fs.existsSync(settingPath)){
+    try{
+      var pjson =JSON.parse(fs.readFileSync(settingPath,"utf-8"));
+      settings = pjson.settings;
+    }catch(e){
+      console.log("inbiz.settings配置文件格式错误!");
+    }
+  }else{
+      console.log("请您先拉取云端代码至本地!");
+      return;
+  }
   // proxy middleware options
   const options = {
     target: settings.targetUrl, // target host
@@ -73,6 +84,7 @@ function start(){
     }
   }
   app.use('/', exampleProxy);
+  console.log("代理服务开启成功！");
 }
 
 exports.start=start;
