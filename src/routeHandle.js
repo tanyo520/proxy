@@ -15,28 +15,31 @@ const plgModelRex=/pluginModel\/([A-Za-z0-9]*)\.js\?id=([A-Za-z0-9_]*)&name=([A-
 const pageRex=/pageExtend\/([A-Za-z0-9]*)\.js/;
 const eformContextRex=/([\s\S]*\]\.publicCss)/;
 const isPageRex=/page=true/;
+const pageJsRex=/([\s\S]*globalExtend.page_onPreLoad\(\));/;
+const gloablTypeRex=/\/\*type\:1\*\//;
 var config;
 if(fs.existsSync(remoteConfig)){
    console.log("初次缓存配置文件");
    config = JSON.parse(fs.readFileSync(remoteConfig,"utf-8").toString());
+   watch(remoteConfig,function(evt, name) {
+      if (evt == 'update') {
+        // on create or modify
+        config = JSON.parse(fs.readFileSync(remoteConfig,"utf-8").toString());
+        console.log("更新配置文件");
+      }
+      if (evt == 'remove') {
+        // on delete
+      }
+     
+    });
+}else{
+   console.log(".inbiz下配置文件不存在！");
 }
-
-watch(remoteConfig,function(evt, name) {
-   if (evt == 'update') {
-     // on create or modify
-     config = JSON.parse(fs.readFileSync(remoteConfig,"utf-8").toString());
-     console.log("更新配置文件");
-   }
-   if (evt == 'remove') {
-     // on delete
-   }
-  
- });
 
 exports.handle=function(data,body){
    switch(data.key){
     case "global":
-       body = handleGlobal();
+       body = handleGlobal(data,body);
        break;
     case "globalCss":
        body = handleGlobalCss();
@@ -53,8 +56,23 @@ exports.handle=function(data,body){
     case "isPage":
       body = handisPage(data,body);
       break;
+	case "customPage":
+      body = handCustomPageExtend(data,body);
+      break;
    }
   return body; 
+}
+
+function handCustomPageExtend(data,body){
+   var pageConfig = config.wcm.pages[data.val];
+   if(pageConfig && pageConfig.path){
+      var pageJsPath= path.join(currentPath,pageConfig.path,"index.js");
+      if(fs.existsSync(pageJsPath)){
+          var jsStr= fs.readFileSync(pageJsPath,"utf-8");
+          body=new Buffer(jsStr,"utf-8");  
+      }
+   }
+  return body;
 }
 
 function handisPage(data,body){
@@ -70,13 +88,21 @@ function handisPage(data,body){
   });
   return new Buffer(pageContent,"utf-8"); 
 }
-function handleGlobal(){
+function handleGlobal(data,body){
    var code = fs.readFileSync(globaJsPath,"utf-8");
-   var genCode = `define(['jquery', 'logic/Portal', 'inbizsdk'], function($, portal, context){return {page_onLoad: function() {
-   `+
-   code
-    +
-   `}}})`;
+   var genCode="";
+   var trimCode = code.replace(/[\r\n]/g,"");
+   if(trimCode){
+      if(trimCode.startsWith("define(")){
+         genCode=code;
+      }else{
+         genCode = `define(['jquery', 'logic/Portal', 'inbizsdk'], function($, portal, context){return {page_onLoad: function() {
+            `+
+            code
+             +
+            `}}})`;
+      }
+   }
    var body = new Buffer(genCode,"utf-8"); 
    return body;
  }
@@ -127,7 +153,9 @@ function handlePage(data,body){
   }
   //更新自定义页面
   var $page =$("div[data-custom-page]").eq(0);
+  var isCurtom=false;
   if($page && $page.length>0){
+    isCurtom=true;
     var pageId = $page.attr("data-custom-page");
     var pageConfig = config.wcm.pages[pageId];
     if(pageConfig && pageConfig.path){
@@ -135,6 +163,7 @@ function handlePage(data,body){
       if(fs.existsSync(pageViewPath)){
           $page.empty();
           var cpageStr= fs.readFileSync(pageViewPath,"utf-8");
+		  $page.append($style);
           $page.append(cpageStr);
       }
     }else{
@@ -143,6 +172,36 @@ function handlePage(data,body){
   }
   var html =  $("#handle").html();
   var pageHtml = pageContent.replace(pageHtmlRex,"$(decodeURIComponent('"+encodeURIComponent(html)+"'))[0]");
+
+  var pageCfg=config.wcm.pages[data.val];
+  if(!isCurtom && pageCfg && pageCfg.path){
+     var pagejsPath= path.join(currentPath,pageCfg.path,"index.js");
+     if(fs.existsSync(pagejsPath)){
+         if(pageJsRex.test(pageHtml)){
+            var paegeJS = fs.readFileSync(pagejsPath,"utf-8");
+            if(paegeJS){
+               var temp = pageJsRex.exec(pageHtml)[1];
+               temp+=`;
+                          ${paegeJS}
+                        })
+                     },
+                     attached: function() {
+                        require(['jquery', 'logic/Portal', 'inbizsdk'], function($, portal, context) {
+                        })
+                     },
+                     compositionComplete: function() {
+                        globalExtend.page_onLoad && globalExtend.page_onLoad();
+                     }
+                  }
+               })
+               `;
+               pageHtml=temp;
+            }
+         }
+     }
+  }
+  
+
   return  new Buffer(pageHtml,"utf-8"); 
 }
 function handlePlgModel(data, body){
@@ -237,10 +296,10 @@ exports.getHandleKey=function(url){
    else if(isPageRex.test(url)){
       result.key="isPage";
    }
-   //else if(pageRex.test(url)){
-   //    result.key="page";
-   //    result.val=pageRex.exec(url)[1];
-   // }
+   else if(pageRex.test(url)){
+      result.key="customPage";
+      result.val=pageRex.exec(url)[1];
+   }
    return result;
 }
 
