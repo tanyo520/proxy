@@ -12,7 +12,7 @@ function start(){
   if(fs.existsSync(settingPath)){
     try{
       var pjson =JSON.parse(fs.readFileSync(settingPath,"utf-8"));
-      settings = pjson.settings;
+      settings = pjson;
     }catch(e){
       console.log("inbiz.settings配置文件格式错误!");
     }
@@ -22,7 +22,7 @@ function start(){
   }
   // proxy middleware options
   const options = {
-    target: settings.targetUrl, // target host
+    target: settings.ServerUrl, // target host
     changeOrigin: true, // needed for virtual hosted sites
     ws: true, // proxy websockets
     selfHandleResponse: true,
@@ -70,8 +70,8 @@ function start(){
   });
 
   app.use(express.static(__dirname + '/lib'));
-  var  server = app.listen(settings.port);
-  if(settings.hot){
+  var  server = app.listen(settings.Port);
+  if(settings.Hot){
     var wcm = path.join(path.resolve(),'wcm');
     var eform = path.join(path.resolve(),'eform');
     if(fs.existsSync(wcm) && fs.existsSync(eform)){

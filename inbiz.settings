@@ -1,7 +1,9 @@
 {
-  "settings": {
-    "hot": true,
-    "port": 3000,
-    "targetUrl": "http://localhost"
-  }
+  "AppId": "c8eb943504aa42c292cb15e30dbc7da8",
+  "PassWord": "V2xkU2RsbDZTVDA9",
+  "SecretKey": "EaDVJhcM6dsrNMi626Gm2Q4RAWmpFJ6WHdDsAiifNPY",
+  "ServerUrl": "http://172.16.0.142:30009",
+  "UserName": "admin",
+  "Hot":true,
+  "Port":3000
 }

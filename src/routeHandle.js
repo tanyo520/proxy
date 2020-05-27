@@ -7,15 +7,15 @@ const remoteConfig= path.join(currentPath,".inbiz","remote.json");
 const globaJsPath= path.join(currentPath,"wcm","public","index.js");
 const globaCssPath= path.join(currentPath,"wcm","public","index.css");
 const pageHtmlRex= /\$\(decodeURIComponent\(\'([\s\S]*)\'\)\)\[0\]/;
-const globalRex=/globalExtend\/([A-Za-z0-9]*)\.js/;
-const globalCssRex=/globalExtend\/([A-Za-z0-9]*)\.css/;
-const pageContentRex=/pageContent\/([A-Za-z0-9]*)\/([A-Za-z0-9]*)\.js/;
+const globalRex=/globalExtend\/([A-Za-z0-9_]*)\.js/;
+const globalCssRex=/globalExtend\/([A-Za-z0-9_]*)\.css/;
+const pageContentRex=/pageContent\/([A-Za-z0-9_]*)\/([A-Za-z0-9_]*)\.js/;
 const eformRex=/getextendcode[\s\S]*&formid=([A-Za-z0-9_]*)&/;
-const plgModelRex=/pluginModel\/([A-Za-z0-9]*)\.js\?id=([A-Za-z0-9_]*)&name=([A-Za-z0-9_]*)/;
-const pageRex=/pageExtend\/([A-Za-z0-9]*)\.js/;
+const plgModelRex=/pluginModel\/([A-Za-z0-9_]*)\.js\?id=([A-Za-z0-9_]*)&name=([A-Za-z0-9_]*)/;
+const pageRex=/pageExtend\/([A-Za-z0-9_]*)\.js/;
 const eformContextRex=/([\s\S]*\]\.publicCss)/;
 const isPageRex=/page=true/;
-const pageJsRex=/([\s\S]*globalExtend.page_onPreLoad\(\));/;
+const pageJsRex=/([\s\S]*globalExtend.page_onPreLoad\(\);)/;
 const gloablTypeRex=/\/\*type\:1\*\//;
 var config;
 if(fs.existsSync(remoteConfig)){
@@ -100,7 +100,8 @@ function handleGlobal(data,body){
             `+
             code
              +
-            `}}})`;
+            `
+}}})`;
       }
    }
    var body = new Buffer(genCode,"utf-8"); 
@@ -171,7 +172,7 @@ function handlePage(data,body){
     }
   }
   var html =  $("#handle").html();
-  var pageHtml = pageContent.replace(pageHtmlRex,"$(decodeURIComponent('"+encodeURIComponent(html)+"'))[0]");
+  var pageHtml = pageContent.replace(pageHtmlRex,"$(decodeURIComponent(\""+encodeURIComponent(html)+"\"))[0];\r\n");
 
   var pageCfg=config.wcm.pages[data.val];
   if(!isCurtom && pageCfg && pageCfg.path){
