@@ -34,6 +34,7 @@ function start(){
     onProxyRes: function (proxyRes, req, res) {
       var url = req.url;
       var result = getHandleKey(url);
+      result.url=url;
       res.append('Access-Control-Allow-Origin', '*');
       res.append('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
       var originalBody = new Buffer('');
@@ -72,16 +73,27 @@ function start(){
   app.use(express.static(__dirname + '/lib'));
   var  server = app.listen(settings.Port);
   if(settings.Hot){
+    var paths=[];
     var wcm = path.join(path.resolve(),'wcm');
     var eform = path.join(path.resolve(),'eform');
-    if(fs.existsSync(wcm) && fs.existsSync(eform)){
-      reload({
-        server: server,
-        path: [wcm,eform]
-      });
-    }else{
-      console.log("请先从云端获取代码到本地,本地没有找到wcm和eform代码目录!");
+    var dev = path.join(path.resolve(),'dev');
+    if(fs.existsSync(wcm)){
+      paths.push(wcm);
     }
+    if(fs.existsSync(eform)){
+      paths.push(eform);
+    }
+    if(fs.existsSync(dev)){
+      paths.push(eform);
+    }
+    if(paths.length==0){
+     console.log("请先从云端获取代码到本地,本地没有找到wcm,eform,dev目录!");
+     return;
+    }
+    reload({
+      server: server,
+      path: paths
+    });
   }
   app.use('/', exampleProxy);
   console.log("代理服务开启成功！");
