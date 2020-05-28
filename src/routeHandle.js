@@ -9,7 +9,7 @@ const globaCssPath = path.join(currentPath, "wcm", "public", "index.css");
 const pageHtmlRex = /\$\(decodeURIComponent\(\'([\s\S]*)\'\)\)\[0\]/;
 const globalRex = /globalExtend\/([A-Za-z0-9_-]*)\.js/;
 const globalCssRex = /globalExtend\/([A-Za-z0-9_-]*)\.css/;
-const pageContentRex = /pageContent\/([A-Za-z0-9_-]*)\/([A-Za-z0-9_-]*)\.js/;
+const pageContentRex = /pageContent\/([A-Za-z0-9_-]*)(\/([A-Za-z0-9_-]*))?\.js/;
 const eformRex = /getextendcode[\s\S]*&formid=([A-Za-z0-9_]*)&/;
 const plgModelRex = /pluginModel\/([A-Za-z0-9_-]*)\.js\?id=([A-Za-z0-9_-]*)&name=([A-Za-z0-9_-]*)/;
 const pageRex = /pageExtend\/([A-Za-z0-9_-]*)\.js/;

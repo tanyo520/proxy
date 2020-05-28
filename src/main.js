@@ -84,7 +84,7 @@ function start(){
       paths.push(eform);
     }
     if(fs.existsSync(dev)){
-      paths.push(eform);
+      paths.push(dev);
     }
     if(paths.length==0){
      console.log("请先从云端获取代码到本地,本地没有找到wcm,eform,dev目录!");
