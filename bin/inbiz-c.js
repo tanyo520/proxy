@@ -125,13 +125,23 @@ function _eformMin(css,js,presets){
     var rJs="";
     if(css){
         if(presets.indexOf("minify")>-1){
+        try{
           rCss = cssmin(css);
+         }catch(e){
+           console.log(e);
+           rCss=css;
+         }
        }
     }
     if(js){
-        var transJs = babel.transformSync(js,{presets:presets});
-        var jsMin = transJs.code;
-        rJs = jsMin;
+        try{
+            var transJs = babel.transformSync(js,{presets:presets});
+            var jsMin = transJs.code;
+            rJs = jsMin;
+        }catch(e){
+            console.log(e);
+            rJs=js;
+        }
     }
     return { css:rCss,js:rJs};
 }
@@ -140,19 +150,28 @@ function _min(css,js,presets){
     var rJs="";
     if(css){
         if(presets.indexOf("minify")>-1){
-            rCss = Buffer.from(css,'base64').toString();
-            rCss = cssmin(rCss);
-            rCss= Buffer.from(rCss).toString('base64');
+            try{
+                rCss = Buffer.from(css,'base64').toString();
+                rCss = cssmin(rCss);
+                rCss= Buffer.from(rCss).toString('base64');
+            }catch(e){
+                console.log(e);
+                rCss=css;
+            }
         }
     }
     if(js){
-        rJs = Buffer.from(js,'base64').toString();
-        var transJs = babel.transformSync(rJs,{presets:presets});
-        var jsMin = transJs.code;
-        rJs = jsMin;
-        rJs= Buffer.from(rJs).toString('base64');
+        try{
+            rJs = Buffer.from(js,'base64').toString();
+            var transJs = babel.transformSync(rJs,{presets:presets});
+            var jsMin = transJs.code;
+            rJs = jsMin;
+            rJs= Buffer.from(rJs).toString('base64');
+        }catch(e){
+            console.log(e);
+            rjs=js;
+        }
     }
-
     return { css:rCss,js:rJs};
 }
 
@@ -171,7 +190,7 @@ function getFiles(url, ext) {
     return filePath;
 }
 
-// convertFile("E:\\sss\\测试站点20200608134646.zip","E:\\sss\\aaa",1);
+//convertFile("E:\\sss\\edrms20200608164636.zip","E:\\sss\\aaa",1);
 inquirer.prompt([
     {
       name: 'i',
