@@ -5,6 +5,7 @@ var path = require('path');
 const compressing = require('compressing');
 var cssmin = require('cssmin');
 var babel = require("@babel/core");
+const {resolve} = require('path')
 async function convertFile(input,output,type){
     if(fs.existsSync(input)){
         var name = path.basename(input,);
