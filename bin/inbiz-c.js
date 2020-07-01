@@ -82,7 +82,7 @@ async function convertFile(input,output,type){
             console.log("----转换eform扩展代码完成！-----")
          }
        }
-
+       console.log("----转换资源文件开始！-----")
        if(fs.existsSync(resPath)){
          let resConfig = JSON.parse(fs.readFileSync(resPath));
          resConfig.fileResourcesDetail.forEach(item=>{
@@ -101,6 +101,7 @@ async function convertFile(input,output,type){
             } 
          });
        }
+       console.log("----转换资源文件完成！-----")
        const zipStream = new compressing.zip.Stream();
        let files = fs.readdirSync(basePath);
        if(files){
@@ -135,7 +136,7 @@ function _eformMin(css,js,presets){
     }
     if(js){
         try{
-            var transJs = babel.transformSync(js,{presets:presets});
+            var transJs = babel.transformSync(js,{presets:presets,cwd:resolve( __dirname,"../")});
             var jsMin = transJs.code;
             rJs = jsMin;
         }catch(e){
@@ -146,8 +147,8 @@ function _eformMin(css,js,presets){
     return { css:rCss,js:rJs};
 }
 function _min(css,js,presets){
-    var rCss=css;
-    var rJs="";
+    let rCss=css;
+    let rJs="";
     if(css){
         if(presets.indexOf("minify")>-1){
             try{
@@ -163,13 +164,13 @@ function _min(css,js,presets){
     if(js){
         try{
             rJs = Buffer.from(js,'base64').toString();
-            var transJs = babel.transformSync(rJs,{presets:presets});
+            var transJs = babel.transformSync(rJs,{presets:presets,cwd:resolve( __dirname,"../")});
             var jsMin = transJs.code;
             rJs = jsMin;
             rJs= Buffer.from(rJs).toString('base64');
         }catch(e){
             console.log(e);
-            rjs=js;
+            rJs=js;
         }
     }
     return { css:rCss,js:rJs};
@@ -190,7 +191,7 @@ function getFiles(url, ext) {
     return filePath;
 }
 
-//convertFile("E:\\sss\\edrms20200608164636.zip","E:\\sss\\aaa",1);
+// convertFile("F:\\ps\\testvscode\\backup\\backup202063016139.zip","E:\\sss\\aaa",0);
 inquirer.prompt([
     {
       name: 'i',
