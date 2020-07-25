@@ -15,6 +15,7 @@ const plgModelRex = /pluginModel\/([A-Za-z0-9_-]*)\.js\?id=([A-Za-z0-9_-]*)&name
 const pageRex = /pageExtend\/([A-Za-z0-9_-]*)\.js/;
 const eformContextRex = /([\s\S]*\]\.publicCss)/;
 const isPageRex = /page=true/;
+const eformPageRex=/eform\/index/;
 const pageJsRex = /([\s\S]*globalExtend.page_onPreLoad\(\);)/;
 const gloablTypeRex = /\/\*type\:1\*\//;
 const fileByPathRex = /external\/eform\/upload\/fileresourcemanager\/([A-Za-z0-9_-]*)\/([A-Za-z0-9_-]*)\.js/;
@@ -340,7 +341,7 @@ exports.getHandleKey = function (url) {
       result.key = "eform";
       result.val = eformRex.exec(url)[1];
    }
-   else if (isPageRex.test(url)) {
+   else if (isPageRex.test(url)||eformPageRex.test(url)) {
       result.key = "isPage";
    }
    else if (pageRex.test(url)) {

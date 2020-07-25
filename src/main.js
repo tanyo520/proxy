@@ -62,7 +62,6 @@ function start(){
   const app = express();
   app.all('*', function(req, res, next) {
     res.set({
-        'X-Frame-Options': 'DENY',
         'Cache-control': 'no-store',
         'Pragma': 'no-cache',
         'Strict-Transport-Security': 'max-age=' + (365 * 24 * 60 * 60) // 365 days, in seconds
@@ -98,5 +97,4 @@ function start(){
   app.use('/', exampleProxy);
   console.log("代理服务开启成功！");
 }
-
 exports.start=start;
