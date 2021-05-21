@@ -5,6 +5,43 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 var path =require("path");
 var reload = require('./index');
 var fs =require("fs");
+const { Buffer } = require('buffer');
+const observe = require('inquirer/lib/utils/events');
+const zlib = require('zlib');
+
+function handleBuffer(oriBuffer, encoding) {
+  let decodeMethod = '';
+  let encodeMethod = '';
+  // 编码格式介绍：https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Encoding
+  switch (encoding) {
+      case 'gzip':
+          decodeMethod = 'gunzipSync';
+          encodeMethod = 'gzipSync';
+          break;
+      case 'deflate':
+          decodeMethod = 'inflateSync';
+          encodeMethod = 'deflateSync';
+          break;
+      case 'br':
+          decodeMethod = 'brotliDecompressSync';
+          encodeMethod = 'brotliCompressSync';
+          break;
+      default:
+          break;
+  }
+  let decodeBuffer = oriBuffer;
+  var handle=null;
+  if (decodeMethod && encodeMethod) {
+      decodeBuffer = zlib[decodeMethod](oriBuffer);
+      var handle=function(buffer){
+        return zlib[encodeMethod](buffer);
+      }
+  }
+  return {
+    decodeBuffer:decodeBuffer,
+    reshandle:handle
+   };
+}
 
 function start(){
   var settings={};
@@ -47,7 +84,13 @@ function start(){
             res.append(key, proxyRes.headers[key]);
           }
         });
+        var encoding =  proxyRes.headers['content-encoding'];
+        var handleObj =  handleBuffer(originalBody,encoding);
+        originalBody =handleObj.decodeBuffer;
         originalBody = handle(result,originalBody);
+        if(handleObj.reshandle){
+          originalBody = handleObj.reshandle(originalBody);
+        }
         res.append("content-length",originalBody.length);
         res.write(originalBody);
         res.end();

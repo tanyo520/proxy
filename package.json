@@ -1,8 +1,8 @@
 {
   "name": "inbiz-tools",
-  "version": "2.1.5",
+  "version": "2.1.7",
   "description": "this inbiz dev tools",
-  "main": "bin/inbiz-gen.js",
+  "main": "bin/dev_start.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
